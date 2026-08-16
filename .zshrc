@@ -1,15 +1,17 @@
-
-if type brew &>/dev/null; then
-  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+# 1. Kích hoạt tính năng Instant Prompt của p10k (Giúp terminal hiện lên ngay lập tức)
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-autoload -Uz compinit
-compinit
+# 2. Nạp theme Powerlevel10k trực tiếp
+source ~/.zsh/powerlevel10k/powerlevel10k.zsh-theme
 
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 
+# 3. Nạp các tính năng cơ bản của hệ thống
+autoload -Uz compinit && compinit
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-[[ ! -f ~/pkzsh ]] || source ~/.p10k.zsh
+# 4. Nạp các plugin độc lập
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# 5. Nạp cấu hình giao diện p10k của bạn
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
