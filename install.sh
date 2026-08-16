@@ -1,8 +1,9 @@
 #!/bin/bash
+echo "===== START ====="
 
 if [ "$(uname -s)" = "Linux" ]; then
     if ! command -v starship >/dev/null 2>&1; then
-        curl -sS https://starship.rs/install.sh | sh
+        curl -sS https://starship.rs/install.sh | sh -s -- --yes
     fi
 fi
 
@@ -11,4 +12,4 @@ echo "Đang tạo liên kết file cấu hình..."
 
 ln -sf "$HOME/dotfiles/.bashrc" "$HOME/.bashrc"
 
-echo "===== HOÀN TẤT ====="
+echo "===== END ====="
