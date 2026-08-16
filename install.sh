@@ -11,16 +11,16 @@ mkdir -p ~/.zsh
 
 # 3. Tải theme Powerlevel10k thẳng vào thư mục riêng
 if [ ! -d "~/.zsh/powerlevel10k" ]; then
-    git clone --depth=1 https://github.com ~/.zsh/powerlevel10k
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.zsh/powerlevel10k
 fi
 
 # 4. Tải các plugin độc lập
 if [ ! -d "~/.zsh/zsh-autosuggestions" ]; then
-    git clone https://github.com ~/.zsh/zsh-autosuggestions
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git ~/.zsh/zsh-autosuggestions
 fi
 
 if [ ! -d "~/.zsh/zsh-syntax-highlighting" ]; then
-    git clone https://github.com ~/.zsh/zsh-syntax-highlighting
+    git https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/zsh-syntax-highlighting
 fi
 
 # 5. Tạo liên kết file cấu hình
