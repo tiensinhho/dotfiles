@@ -9,6 +9,7 @@ if [ "$(uname -s)" = "Linux" ]; then
 fi
 
 ln -sf "$HOME/dotfiles/.bashrc" "$HOME/.bashrc"
+mkdir -p "$HOME/.config"
 ln -sf "$HOME/dotfiles/starship.toml" "$HOME/.config/starship.toml"
 
 echo "===== END ====="
