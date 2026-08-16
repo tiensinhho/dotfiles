@@ -1,39 +1,33 @@
 #!/bin/bash
+echo "===== CÀI ĐẶT ZSH KHÔNG DÙNG OH-MY-ZSH ====="
 
-echo "===== ĐANG BẮT ĐẦU CÀI ĐẶT DOTFILES ====="
-
-# 1. Kiểm tra và Cài đặt Zsh + Sudo/Curl nếu container thiếu
+# 1. Cài đặt Zsh nếu container chưa có
 if ! command -v zsh &> /dev/null; then
-    echo "Zsh chưa được cài. Đang tiến hành cài đặt Zsh..."
     sudo apt-get update && sudo apt-get install -y zsh git curl
 fi
 
-# 2. Cài đặt Oh My Zsh (Cài ở chế độ im lặng, không tự động bật shell)
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo "Đang cài đặt Oh My Zsh..."
-    sh -c "$(curl -fsSL https://githubusercontent.com)" "" --unattended
+# 2. Tạo thư mục chứa các công cụ độc lập
+mkdir -p ~/.zsh
+
+# 3. Tải theme Powerlevel10k thẳng vào thư mục riêng
+if [ ! -d "~/.zsh/powerlevel10k" ]; then
+    git clone --depth=1 https://github.com ~/.zsh/powerlevel10k
 fi
 
-# 3. Tải theme Powerlevel10k
-P10K_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-if [ ! -d "$P10K_DIR" ]; then
-    echo "Đang tải theme Powerlevel10k..."
-    git clone --depth=1 https://github.com "$P10K_DIR"
+# 4. Tải các plugin độc lập
+if [ ! -d "~/.zsh/zsh-autosuggestions" ]; then
+    git clone https://github.com ~/.zsh/zsh-autosuggestions
 fi
 
-# 4. Tải các Plugin (Autosuggestions & Syntax Highlighting)
-SUGGEST_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
-if [ ! -d "$SUGGEST_DIR" ]; then
-    echo "Đang tải plugin zsh-autosuggestions..."
-    git clone https://github.com "$SUGGEST_DIR"
+if [ ! -d "~/.zsh/zsh-syntax-highlighting" ]; then
+    git clone https://github.com ~/.zsh/zsh-syntax-highlighting
 fi
 
-HIGHLIGHT_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
-if [ ! -d "$HIGHLIGHT_DIR" ]; then
-    echo "Đang tải plugin zsh-syntax-highlighting..."
-    git clone https://github.com "$HIGHLIGHT_DIR"
-fi
+# 5. Tạo liên kết file cấu hình
+ln -sf ~/dotfiles/.zshrc ~/.zshrc
+ln -sf ~/dotfiles/.p10k.zsh ~/.p10k.zsh
 
+echo "===== HOÀN TẤT ====="
 # 5. Đồng bộ liên kết (Symlink) file cấu hình từ repo vào thư mục nhà (~)
 echo "Đang tạo liên kết file cấu hình..."
 ln -sf ~/dotfiles/.zshrc ~/.zshrc
