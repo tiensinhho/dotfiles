@@ -1,27 +1,41 @@
-# source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-# source /usr/local/opt/zsh-fast-syntax-highlighting/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+# if type brew &>/dev/null; then
+#   FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+# fi
+
+# autoload -Uz compinit
+# compinit
+
+# zstyle ':completion:*' menu select
+# zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 
+
+alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+
+devcode() {
+    local hex_path=$(echo -n "$(pwd)" | xxd -p | tr -d '\n')
+    local folder_name=$(basename "$(pwd)")
+    code --folder-uri "vscode-remote://dev-container+${hex_path}/workspaces/${folder_name}"
+}
 
 # ============================================================
 # Colors
 # ============================================================
 
-RESET='%f%k%b'
+RESET='%f%b'
 BOLD='%B'
-DIM='%F{8}'
 
-# Foreground
-FG_BLUE='%F{25}'
-FG_GREEN='%F{28}'
-FG_GRAY='%F{240}'
-FG_YELLOW='%F{136}'
-FG_RED='%F{196}'
+FG_BLUE='%F{24}'
+FG_GREEN='%F{040}'
+FG_GRAY='%F{8}'
+FG_YELLOW='%F{220}'
+FG_RED='%F{160}'
 
-# Background
-BG_BLUE='%K{25}'
-BG_GREEN='%K{28}'
-BG_GRAY='%K{240}'
-BG_YELLOW='%K{136}'
-BG_RED='%K{196}'
+
+# ============================================================
+# Variables
+# ============================================================
+
+PROMPT_START_TIME=0
+PROMPT_STATUS=''
 
 
 # ============================================================
@@ -29,10 +43,10 @@ BG_RED='%K{196}'
 # ============================================================
 
 segment() {
-    local bg="$1"
+    local color="$1"
     local text="$2"
 
-    print -Pn "${bg} ${BOLD}${text}%b ${RESET}"
+    print -Pn "${color}${BOLD}${text}${RESET}"
 }
 
 
@@ -41,7 +55,7 @@ segment() {
 # ============================================================
 
 prompt_git() {
-    local branch status upstream counts
+    local branch git_status upstream counts
     local ahead=0
     local behind=0
 
@@ -58,7 +72,7 @@ prompt_git() {
     fi
 
     # Working tree status
-    status=$(git status --porcelain 2>/dev/null)
+    git_status=$(git status --porcelain 2>/dev/null)
 
     # Remote tracking branch
     upstream=$(git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
@@ -72,20 +86,20 @@ prompt_git() {
         fi
     fi
 
-    local info=" ${branch}"
+    local info="git:${branch}"
 
     # Dirty working tree
-    [[ -n "$status" ]] && info+=" ✦"
+    [[ -n "$git_status" ]] && info+=" ✦"
 
     # Remote status
-    (( ahead > 0 ))  && info+=" ⇡${ahead}"
-    (( behind > 0 )) && info+=" ⇣${behind}"
+    (( ahead > 0 ))  && info+=" ↑${ahead}"
+    (( behind > 0 )) && info+=" ↓${behind}"
 
     # Color
-    if [[ -n "$status" ]]; then
-        segment "$BG_YELLOW" "$info"
+    if [[ -n "$git_status" ]]; then
+        segment "$FG_YELLOW" "${info} "
     else
-        segment "$BG_GREEN" "$info"
+        segment "$FG_GREEN" "${info} "
     fi
 }
 
@@ -100,16 +114,15 @@ preexec() {
 
 prompt_duration() {
 
-    [[ -z "$PROMPT_START_TIME" ]] && return
+    (( PROMPT_START_TIME == 0 )) && return
 
     local duration=$((SECONDS - PROMPT_START_TIME))
 
-    # Only show duration when command took >= 2 seconds
     if (( duration >= 2 )); then
-        segment "$BG_GRAY" "⏱ ${duration}s"
+        segment "$FG_GRAY" "${duration}s "
     fi
 
-    PROMPT_START_TIME=""
+    PROMPT_START_TIME=0
 }
 
 
@@ -119,12 +132,12 @@ prompt_duration() {
 
 prompt_precmd() {
 
-    local code=$?
+    local exit_code=$?
 
-    PROMPT_STATUS=""
+    PROMPT_STATUS=''
 
-    if (( code != 0 )); then
-        PROMPT_STATUS="$(segment "$BG_RED" "✘ ${code}")"
+    if (( exit_code != 0 )); then
+        PROMPT_STATUS="$(segment "$FG_RED" "✘ ${exit_code} ")"
     fi
 }
 
@@ -135,6 +148,7 @@ prompt_precmd() {
 
 autoload -Uz add-zsh-hook
 
+add-zsh-hook preexec preexec
 add-zsh-hook precmd prompt_precmd
 add-zsh-hook precmd prompt_duration
 
@@ -146,5 +160,5 @@ add-zsh-hook precmd prompt_duration
 setopt PROMPT_SUBST
 
 PROMPT='
-${FG_BLUE}%F{255}$(segment "$BG_BLUE"  "%n@%m")$(prompt_git)$(prompt_duration)${PROMPT_STATUS}$(segment "$BG_GRAY" "%~")${FG_GRAY}
+$(segment "$FG_BLUE" "%~ ")$(prompt_git)$(prompt_duration)${PROMPT_STATUS}
 ❯ '
