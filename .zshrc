@@ -160,5 +160,5 @@ add-zsh-hook precmd prompt_duration
 setopt PROMPT_SUBST
 
 PROMPT='
-$(segment "$FG_BLUE" "%~ ")$(prompt_git)$(prompt_duration)${PROMPT_STATUS}
+$(segment "$FG_BLUE" "%n@%m ")$(prompt_git)$(prompt_duration)${PROMPT_STATUS}$(segment "$FG_GRAY" "%~ ")
 ❯ '
