@@ -4,18 +4,20 @@
 
 RESET='\[\e[0m\]'
 BOLD='\[\e[1m\]'
-DIM='\[\e[38;5;240m\]'
 
-# Foreground
-FG_BLUE='\[\e[38;5;25m\]'
-FG_GRAY='\[\e[38;5;240m\]'
+FG_BLUE='\[\e[34m\]'
+FG_GREEN='\[\e[32m\]'
+FG_GRAY='\[\e[90m\]'
+FG_YELLOW='\[\e[33m\]'
+FG_RED='\[\e[31m\]'
 
-# Background
-BG_BLUE='\[\e[48;5;25m\]'
-BG_GREEN='\[\e[48;5;28m\]'
-BG_GRAY='\[\e[48;5;240m\]'
-BG_YELLOW='\[\e[48;5;136m\]'
-BG_RED='\[\e[48;5;196m\]'
+
+# ============================================================
+# Variables
+# ============================================================
+
+PROMPT_START_TIME=0
+PROMPT_STATUS=''
 
 
 # ============================================================
@@ -23,11 +25,10 @@ BG_RED='\[\e[48;5;196m\]'
 # ============================================================
 
 segment() {
-    local bg="$1"
+    local color="$1"
     local text="$2"
 
-    printf '%b%b %s %b%b' \
-        "$bg" "$BOLD" "$text" "$RESET" "$RESET"
+    printf '%b%b%s%b' "$color" "$BOLD" "$text" "$RESET"
 }
 
 
@@ -66,20 +67,19 @@ prompt_git() {
         fi
     fi
 
-    local info=" ${branch}"
+    local info="git:${branch}"
 
     # Dirty working tree
     [[ -n "$status" ]] && info+=" ✦"
 
     # Remote status
-    (( ahead > 0 ))  && info+=" ⇡${ahead}"
-    (( behind > 0 )) && info+=" ⇣${behind}"
+    (( ahead > 0 ))  && info+=" ↑${ahead}"
+    (( behind > 0 )) && info+=" ↓${behind}"
 
-    # Color
     if [[ -n "$status" ]]; then
-        segment "$BG_YELLOW" "$info"
+        segment "$FG_YELLOW" " ${info} "
     else
-        segment "$BG_GREEN" "$info"
+        segment "$FG_GREEN" " ${info} "
     fi
 }
 
@@ -88,18 +88,18 @@ prompt_git() {
 # Command duration
 # ============================================================
 
-PROMPT_START_TIME=0
-
-# Bash equivalent of zsh preexec
-trap 'PROMPT_START_TIME=$SECONDS' DEBUG
+prompt_preexec() {
+    PROMPT_START_TIME=$SECONDS
+}
 
 prompt_duration() {
+
     [[ "$PROMPT_START_TIME" -eq 0 ]] && return
 
     local duration=$((SECONDS - PROMPT_START_TIME))
 
     if (( duration >= 2 )); then
-        segment "$BG_GRAY" "⏱ ${duration}s"
+        segment "$FG_GRAY" " ${duration}s "
     fi
 
     PROMPT_START_TIME=0
@@ -107,58 +107,43 @@ prompt_duration() {
 
 
 # ============================================================
-# Exit status
+# Prompt status
 # ============================================================
 
 prompt_status() {
-    local code=$?
 
-    PROMPT_STATUS=""
+    local code=$1
+
+    PROMPT_STATUS=''
 
     if (( code != 0 )); then
-        PROMPT_STATUS=$(segment "$BG_RED" "✘ ${code}")
+        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${code} ")
     fi
 }
 
 
 # ============================================================
-# Prompt
+# Build prompt
 # ============================================================
 
 prompt_command() {
-    local cwd git duration status
 
-    # Save previous command exit status
-    local code=$?
+    local exit_code=$?
 
-    # Status
-    PROMPT_STATUS=""
+    prompt_status "$exit_code"
 
-    if (( code != 0 )); then
-        PROMPT_STATUS=$(segment "$BG_RED" "✘ ${code}")
-    fi
+    prompt_duration
 
-    # Duration
-    duration=""
-    if [[ "$PROMPT_START_TIME" -ne 0 ]]; then
-        local elapsed=$((SECONDS - PROMPT_START_TIME))
-
-        if (( elapsed >= 2 )); then
-            duration=$(segment "$BG_GRAY" "⏱ ${elapsed}s")
-        fi
-    fi
-
-    PROMPT_START_TIME=0
-
-    # Git
-    git=$(prompt_git)
-
-    # Current directory
-    cwd=$(segment "$BG_GRAY" '\w')
-
-    # Prompt
-    PS1="${FG_BLUE}$(segment "$BG_BLUE" '\u@\h')${git}${duration}${PROMPT_STATUS}${cwd}${FG_GRAY}
+    PS1="
+$(segment "$FG_BLUE" '\u@\h')$(prompt_git)${PROMPT_STATUS}$(segment "$FG_GRAY" ' \w ')
 ❯ "
+
+    prompt_preexec
 }
+
+
+# ============================================================
+# Hooks
+# ============================================================
 
 PROMPT_COMMAND=prompt_command
