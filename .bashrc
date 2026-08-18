@@ -28,7 +28,11 @@ segment() {
     local color="$1"
     local text="$2"
 
-    printf '%b%b%s%b' "$color" "$BOLD" "$text" "$RESET"
+    printf '%b%b%s%b' \
+        "$color" \
+        "$BOLD" \
+        "$text" \
+        "$RESET"
 }
 
 
@@ -37,7 +41,7 @@ segment() {
 # ============================================================
 
 prompt_git() {
-    local branch status upstream counts
+    local branch git_status upstream counts
     local ahead=0
     local behind=0
 
@@ -54,7 +58,7 @@ prompt_git() {
     fi
 
     # Working tree status
-    status=$(git status --porcelain 2>/dev/null)
+    git_status=$(git status --porcelain 2>/dev/null)
 
     # Remote tracking branch
     upstream=$(git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
@@ -70,13 +74,14 @@ prompt_git() {
     local info="git:${branch}"
 
     # Dirty working tree
-    [[ -n "$status" ]] && info+=" ✦"
+    [[ -n "$git_status" ]] && info+=" ✦"
 
     # Remote status
     (( ahead > 0 ))  && info+=" ↑${ahead}"
     (( behind > 0 )) && info+=" ↓${behind}"
 
-    if [[ -n "$status" ]]; then
+    # Color
+    if [[ -n "$git_status" ]]; then
         segment "$FG_YELLOW" " ${info} "
     else
         segment "$FG_GREEN" " ${info} "
@@ -94,7 +99,7 @@ prompt_preexec() {
 
 prompt_duration() {
 
-    [[ "$PROMPT_START_TIME" -eq 0 ]] && return
+    (( PROMPT_START_TIME == 0 )) && return
 
     local duration=$((SECONDS - PROMPT_START_TIME))
 
@@ -107,30 +112,18 @@ prompt_duration() {
 
 
 # ============================================================
-# Prompt status
-# ============================================================
-
-prompt_status() {
-
-    local code=$1
-
-    PROMPT_STATUS=''
-
-    if (( code != 0 )); then
-        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${code} ")
-    fi
-}
-
-
-# ============================================================
-# Build prompt
+# Prompt
 # ============================================================
 
 prompt_command() {
 
     local exit_code=$?
 
-    prompt_status "$exit_code"
+    PROMPT_STATUS=''
+
+    if (( exit_code != 0 )); then
+        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${exit_code} ")
+    fi
 
     prompt_duration
 
@@ -138,12 +131,12 @@ prompt_command() {
 $(segment "$FG_BLUE" '\u@\h')$(prompt_git)${PROMPT_STATUS}$(segment "$FG_GRAY" ' \w ')
 ❯ "
 
-    prompt_preexec
+    PROMPT_START_TIME=$SECONDS
 }
 
 
 # ============================================================
-# Hooks
+# Hook
 # ============================================================
 
 PROMPT_COMMAND=prompt_command
