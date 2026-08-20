@@ -122,13 +122,13 @@ prompt_command() {
     PROMPT_STATUS=''
 
     if (( exit_code != 0 )); then
-        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${exit_code} ")
+        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${exit_code} 
+")
     fi
 
     prompt_duration
 
-    PS1="
-$(segment "$FG_BLUE" '\u@\h')$(prompt_git)${PROMPT_STATUS}$(segment "$FG_GRAY" ' \w ')
+    PS1="${PROMPT_STATUS}$(segment "$FG_BLUE" '\u@\h')$(prompt_git)$(segment "$FG_GRAY" ' \w ')
 ❯ "
 
     PROMPT_START_TIME=$SECONDS
