@@ -137,7 +137,8 @@ prompt_precmd() {
     PROMPT_STATUS=''
 
     if (( exit_code != 0 )); then
-        PROMPT_STATUS="$(segment "$FG_RED" "✘ ${exit_code} ")"
+        PROMPT_STATUS="$(segment "$FG_RED" "✘ ${exit_code} 
+")"
     fi
 }
 
@@ -159,6 +160,5 @@ add-zsh-hook precmd prompt_duration
 
 setopt PROMPT_SUBST
 
-PROMPT='
-$(segment "$FG_BLUE" "%n@%m ")$(prompt_git)$(prompt_duration)${PROMPT_STATUS}$(segment "$FG_GRAY" "%~ ")
+PROMPT='${PROMPT_STATUS}$(segment "$FG_BLUE" "%n@%m ")$(prompt_git)$(prompt_duration)$(segment "$FG_GRAY" "%~ ")
 ❯ '
