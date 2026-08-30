@@ -88,55 +88,15 @@ prompt_git() {
     fi
 }
 
-
-# ============================================================
-# Command duration
-# ============================================================
-
-prompt_preexec() {
-    PROMPT_START_TIME=$SECONDS
-}
-
-prompt_duration() {
-
-    (( PROMPT_START_TIME == 0 )) && return
-
-    local duration=$((SECONDS - PROMPT_START_TIME))
-
-    if (( duration >= 2 )); then
-        segment "$FG_GRAY" " ${duration}s "
-    fi
-
-    PROMPT_START_TIME=0
-}
-
-
 # ============================================================
 # Prompt
 # ============================================================
-
 prompt_command() {
-
-    local exit_code=$?
-
-    PROMPT_STATUS=''
-
-    if (( exit_code != 0 )); then
-        PROMPT_STATUS=$(segment "$FG_RED" " ✘ ${exit_code} 
-")
-    fi
-
-    prompt_duration
-
-    PS1="${PROMPT_STATUS}$(segment "$FG_BLUE" '\u@\h')$(prompt_git)$(segment "$FG_GRAY" ' \w ')
+    PS1="$(segment "$FG_BLUE" '\u@\h')$(prompt_git)$(segment "$FG_GRAY" ' \w ')
 ❯ "
-
-    PROMPT_START_TIME=$SECONDS
 }
-
 
 # ============================================================
 # Hook
 # ============================================================
-
 PROMPT_COMMAND=prompt_command
